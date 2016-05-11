@@ -1,0 +1,84 @@
+
+
+void FaceDetection::detectFace(cv::Mat & frame)
+{
+    /// Reduce the noise to avoid false detection
+
+    GaussianBlur(frame, frame, cv::Size(9, 9), 2, 2);
+
+
+    std::vector<cv::Rect> faces;
+    //HAAR CASCADE
+    face_cascade.detectMultiScale( frame, faces, 1.1, 2, 0|CV_HAAR_SCALE_IMAGE|CV_HAAR_FIND_BIGGEST_OBJECT, cv::Size(150, 150) );
+
+#if 0
+    for(size_t i = 0; i < faces.size(); i++)
+    {
+        rectangle(frame, faces[i],1);
+    }
+#endif
+
+    cv::Mat faceROI;
+
+    if(faces.size() > 0)
+    {
+        faceROI = frame(faces[0]);
+    }
+    else
+    {
+        frame.copyTo(faceROI);
+    }
+
+    std::vector<cv::Rect> eyes;
+    eye_cascade.detectMultiScale(faceROI, eyes, 1.1, 2, 0|CV_HAAR_SCALE_IMAGE|CV_HAAR_FIND_BIGGEST_OBJECT, cv::Size(50, 50) );
+
+    std::vector<cv::Rect> leftEye;
+    leftEye_cascade.detectMultiScale(faceROI, leftEye, 1.1, 2, 0|CV_HAAR_SCALE_IMAGE|CV_HAAR_FIND_BIGGEST_OBJECT, cv::Size(50, 50) );
+    cv::Mat leftEyeROI;
+
+    std::vector<cv::Rect> rightEye;
+    rightEye_cascade.detectMultiScale(faceROI, rightEye, 1.1, 2, 0|CV_HAAR_SCALE_IMAGE|CV_HAAR_FIND_BIGGEST_OBJECT, cv::Size(50, 50) );
+    cv::Mat rightEyeROI;
+
+#if 0
+    for(size_t i = 0; i < eyes.size(); i++)
+    {
+        rectangle(faceROI, eyes[i], 1);
+    }
+#endif
+
+    if(leftEye.size() > 0)
+    {
+        leftEyeROI = faceROI(leftEye[0]);
+        cv::imshow("LeftEye", leftEyeROI);
+        int radiusL = leftEye[0].width/10;
+        cv::circle(faceROI, cv::Point(leftEye[0].x +  leftEye[0].width/2, leftEye[0].y + leftEye[0].height/2), radiusL, CV_RGB(255,0,0), 2);
+    }
+
+    if(rightEye.size() > 0)
+    {
+        rightEyeROI = faceROI(rightEye[0]);
+        cv::imshow("RightEye", rightEyeROI);
+        int radiusR = rightEye[0].width/10;
+        cv::circle(faceROI, cv::Point(rightEye[0].x + rightEye[0].width/2, rightEye[0].y + rightEye[0].height/2), radiusR, CV_RGB(255,0,0), 2);
+    }
+
+    if(eyes.size() > 0)
+    {
+        int radiusEye = eyes[0].width/10;
+        cv::circle(faceROI, cv::Point(eyes[0].x + eyes[0].width/2, eyes[0].y + eyes[0].height/2), radiusEye, CV_RGB(255,0,0), 2);
+    }
+
+    cv::imshow("Face", faceROI);
+
+    if(faces.size() <= 0)
+    {
+        faceROI.copyTo(frame);
+    }
+    cv::imshow("Input Video", frame);
+
+
+
+}
+
+
